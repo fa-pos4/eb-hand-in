@@ -1,0 +1,34 @@
+name: Check Deployment Unique
+on: [push]
+jobs:
+  check-url:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Verify URL ownership and availability
+        run: |
+          # 1. URL einlesen
+          URL=$(cat deployment_url.txt | tr -d '[:space:]')
+          
+          # GitHub Username des Schülers holen (wird automatisch von GitHub gesetzt)
+          STUDENT_USER="${{ github.actor }}"
+          
+          echo "Prüfe URL: $URL"
+          echo "Schüler GitHub User: $STUDENT_USER"
+
+          # 2. Check: Enthält die URL den GitHub Usernamen?
+          # Hinweis: Wir wandeln beide in Kleinbuchstaben um (AWS URLs sind oft lowercase)
+          if [[ "${URL,,}" != *"${STUDENT_USER,,}"* ]]; then
+            echo "❌ FEHLER: Die URL muss deinen GitHub-Benutzernamen enthalten!"
+            echo "Das stellt sicher, dass du deine eigene AWS-Umgebung erstellt hast."
+            exit 1
+          fi
+
+          # 3. Check: Ist die URL erreichbar?
+          if curl --output /dev/null --silent --head --fail "$URL"; then
+            echo "✅ URL ist online und gehört dir!"
+          else
+            echo "❌ FEHLER: URL ist nicht erreichbar (Status Code nicht 200)."
+            exit 1
+          fi          
