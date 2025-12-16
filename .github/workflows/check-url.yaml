@@ -1,4 +1,4 @@
-name: Check Deployment Unique
+name: Check Unique Deployment  
 on: [push]
 jobs:
   check-url:
@@ -8,19 +8,19 @@ jobs:
       
       - name: Verify URL ownership and availability
         run: |
-          # 1. URL einlesen
+          # 1. URL einlesen + Whitespace entfernen  
           URL=$(cat deployment_url.txt | tr -d '[:space:]')
           
-          # GitHub Username des Schülers holen (wird automatisch von GitHub gesetzt)
+          # 2. GitHub Username des Schülers holen  
           STUDENT_USER="${{ github.actor }}"
           
           echo "Prüfe URL: $URL"
-          echo "Schüler GitHub User: $STUDENT_USER"
+          echo "Von User: $STUDENT_USER"
 
-          # 2. Check: Enthält die URL den GitHub Usernamen?
-          # Hinweis: Wir wandeln beide in Kleinbuchstaben um (AWS URLs sind oft lowercase)
+          # 3. Check: Enthält die URL den git user?
+          # Umwandlung in lowercase und prüfen ob user substring der URL  
           if [[ "${URL,,}" != *"${STUDENT_USER,,}"* ]]; then
-            echo "❌ FEHLER: Die URL muss deinen GitHub-Benutzernamen enthalten!"
+            echo "❌ FEHLER: Die URL muss deinen git user enthalten!"
             echo "Das stellt sicher, dass du deine eigene AWS-Umgebung erstellt hast."
             exit 1
           fi
